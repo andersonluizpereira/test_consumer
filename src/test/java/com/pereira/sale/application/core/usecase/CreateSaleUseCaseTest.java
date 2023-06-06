@@ -5,6 +5,7 @@ import com.pereira.sale.application.core.domain.enums.SaleStatus;
 import com.pereira.sale.application.ports.out.SaveSaleOutputPort;
 import com.pereira.sale.application.ports.out.SendCreatedSaleOutputPort;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -30,10 +31,10 @@ class CreateSaleUseCaseTest {
     @Mock
     private SendCreatedSaleOutputPort sendCreatedSaleOutputPort;
 
-//    @BeforeEach
-//    void cleanUp() {
-//        Mockito.reset(saveSaleOutputPort);
-//    }
+    @BeforeEach
+    void cleanUp() {
+        Mockito.reset(saveSaleOutputPort, sendCreatedSaleOutputPort);
+    }
 
     @Test
     void givenAValidCommand_whenCallsCreateSale_shouldReturnSale() {
@@ -54,6 +55,27 @@ class CreateSaleUseCaseTest {
                 .when(sendCreatedSaleOutputPort).send(any(), any());
 
         Assertions.assertDoesNotThrow(() -> createSaleUseCase.create(sale));
+
+        Mockito.verify(saveSaleOutputPort, times(1)).save(eq(sale));
+
+    }
+
+    @Test
+    void givenAValidCommand_whenSaleThrowsException_shouldReturnException() {
+
+        final var aId = 1;
+        final var aProductId = 1;
+        final var aUserId = 1;
+        final var aValue = new BigDecimal("1000.00");
+        final var aStatus = SaleStatus.toEnum(1);
+        final Integer aQuantity = 10;
+
+        var sale = new Sale(aId, aProductId, aUserId, aValue, aStatus, aQuantity);
+
+        doThrow(new IllegalStateException("Gateway error"))
+                .when(saveSaleOutputPort).save(eq(sale));
+
+        Assertions.assertThrows(IllegalStateException.class, () -> createSaleUseCase.create(sale));
 
         Mockito.verify(saveSaleOutputPort, times(1)).save(eq(sale));
 
