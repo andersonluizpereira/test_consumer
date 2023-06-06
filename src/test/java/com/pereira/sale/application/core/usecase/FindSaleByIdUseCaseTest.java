@@ -5,6 +5,7 @@ import com.pereira.sale.application.core.domain.enums.SaleStatus;
 import com.pereira.sale.application.ports.out.FindSaleByIdOutputPort;
 import com.pereira.sale.application.ports.out.SaveSaleOutputPort;
 import com.pereira.sale.application.ports.out.SendCreatedSaleOutputPort;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -66,4 +67,22 @@ class FindSaleByIdUseCaseTest {
         assertEquals(expectedSale.getQuantity(), actualSale.getQuantity());
 
     }
+
+    @Test
+    void givenAInvalidId_whenCallsGetSale_shouldReturnNotFound() {
+        final var expectedErrorMessage = "Venda não encontrada!";
+        final var expectedId = 1;
+
+        when(findSaleByIdOutputPort.find(eq(expectedId)))
+                .thenReturn(Optional.empty());
+
+        final var actualException = Assertions.assertThrows(
+                Exception.class,
+                () -> findSaleByIdUseCase.find(expectedId)
+        );
+
+        Assertions.assertEquals(expectedErrorMessage, actualException.getMessage());
+    }
+
+
 }
