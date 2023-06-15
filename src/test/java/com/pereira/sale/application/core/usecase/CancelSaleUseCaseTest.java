@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -56,8 +57,15 @@ class CancelSaleUseCaseTest {
         when(findSaleByIdInputPort.find(eq(expectedId)))
                 .thenReturn((expectedSale));
 
+        assertTrue(expectedSale.getStatus().equals(SaleStatus.PENDING));
+
         cancelSaleUseCase.cancel(expectedSale);
 
         verify(saveSaleOutputPort, times(1)).save(any(Sale.class));
+        var sale = findSaleByIdInputPort.find(expectedId);
+        verify(findSaleByIdInputPort, times(2)).find(eq(expectedId));
+        verifyNoMoreInteractions(findSaleByIdInputPort);
+        verifyNoMoreInteractions(saveSaleOutputPort);
+        assertTrue(sale.getStatus().equals(SaleStatus.CANCELED));
     }
 }
