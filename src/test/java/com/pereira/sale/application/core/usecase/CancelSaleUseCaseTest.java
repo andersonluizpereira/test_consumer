@@ -1,0 +1,63 @@
+package com.pereira.sale.application.core.usecase;
+
+import com.pereira.sale.application.core.domain.Sale;
+import com.pereira.sale.application.core.domain.enums.SaleStatus;
+import com.pereira.sale.application.ports.in.FindSaleByIdInputPort;
+import com.pereira.sale.application.ports.out.SaveSaleOutputPort;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.math.BigDecimal;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class CancelSaleUseCaseTest {
+
+    @InjectMocks
+    private CancelSaleUseCase cancelSaleUseCase;
+
+    @Mock
+    private FindSaleByIdInputPort findSaleByIdInputPort;
+
+    @Mock
+    private SaveSaleOutputPort saveSaleOutputPort;
+
+    @BeforeEach
+    void cleanUp() {
+        Mockito.reset(findSaleByIdInputPort, saveSaleOutputPort);
+    }
+
+    @Test
+    void givenAValid_whenCallsCancelSale_shouldSale() {
+        final var expectedId = 1;
+        final var expectedProductId = 1;
+        final var expectedUserId = 1;
+        final var expectedValue = new BigDecimal("1000.00");
+        final var expectedStatus = SaleStatus.toEnum(1);
+        final Integer expectedQuantity = 10;
+
+        var expectedSale =
+                new Sale(
+                        expectedId,
+                        expectedProductId,
+                        expectedUserId,
+                        expectedValue,
+                        expectedStatus,
+                        expectedQuantity);
+
+        when(findSaleByIdInputPort.find(eq(expectedId)))
+                .thenReturn((expectedSale));
+
+        cancelSaleUseCase.cancel(expectedSale);
+
+        verify(saveSaleOutputPort, times(1)).save(any(Sale.class));
+    }
+}
